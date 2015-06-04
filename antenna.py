@@ -41,7 +41,7 @@ tag_data = []			# data collected from tags
 def packet_send(string):
 	random_id = hash(string) % 768 + randint(0, 256)	# get and ID by hashing the string
 	packet_num = 1							# starting number (from data)
-	for piece in [string[x:x+32] for x in range(0,len(string),32)]:			# divide string, create and send packets
+	for piece in [string[x:x+40] for x in range(0,len(string),40)]:			# divide string, create and send packets
 		packet = {"id": random_id, "pn": packet_num, "dt": piece}			# compose data packet
 		xbee.send("tx", dest_addr=XBEE_MESH_DESC, data=packb(packet))		# serialize and send
 		packet_num += 1														# increase packet count
@@ -109,26 +109,30 @@ def main():
 
 	# Switch to API Mode
 	print ">>> Configuring Xbee"
-	time.sleep(1)
-	ser_xbee.write("+++")				# enter command mode
-	time.sleep(1)
-	if (ser_xbee.read(3) == "OK\r"):
-		print "AT  \tOK"
-		ser_xbee.write("ATAP 1\r")					# switch to API mode
-		print "ATAP\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATID %s\r" %XBEE_MESH_ID)	# mesh id
-		print "ATID\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATCH %s\r" %XBEE_MESH_CH)	# mesh ch
-		print "ATCH\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATDH %s\r" %XBEE_MESH_DH)	# mesh dh
-		print "ATDH\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATDL %s\r" %XBEE_MESH_DL)	# mesh dl
-		print "ATDL\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATWR\r")					# switch to API mode
-		print "ATWR\t%s" %ser_xbee.read(3)			# wait for reply
-		ser_xbee.write("ATCN\r")					# exit command mode
-	else:
-		print "AT  \tFAIL" 
+	while True:
+		ser_xbee.flushInput()
+		ser_xbee.flushOutput()
+		time.sleep(1)
+		ser_xbee.write("+++")				# enter command mode
+		time.sleep(1)
+		if (ser_xbee.read(3) == "OK\r"):
+			print "AT  \tOK"
+			ser_xbee.write("ATAP 1\r")					# switch to API mode
+			print "ATAP\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATID %s\r" %XBEE_MESH_ID)	# mesh id
+			print "ATID\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATCH %s\r" %XBEE_MESH_CH)	# mesh ch
+			print "ATCH\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATDH %s\r" %XBEE_MESH_DH)	# mesh dh
+			print "ATDH\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATDL %s\r" %XBEE_MESH_DL)	# mesh dl
+			print "ATDL\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATWR\r")					# switch to API mode
+			print "ATWR\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.write("ATCN\r")					# exit command mode
+			break
+		else:
+			print "AT  \tFAIL" 
 
 	# create BGLib object
 	ble = bglib.BGLib()
@@ -164,7 +168,7 @@ def main():
 		# check for all incoming data (no timeout, non-blocking)
 		ble.check_activity(ser_ble)
 
-		if (len(tag_data) > 30):
+		if (len(tag_data) > 5):
 			print "Sending data..."
 			packet_send(packb(create_packet()))
 			tag_data = []
