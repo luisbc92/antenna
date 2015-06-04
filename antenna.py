@@ -22,9 +22,9 @@ XBEE_PORT	= "/dev/ttyAMA0"
 XBEE_BAUD	= 9600
 XBEE_MESH_ID	= "1234"	# Xbee DigiMesh Network ID (0x0000 - 0xFFFF)
 XBEE_MESH_CH	= "0C"		# Xbee DigiMesh Channel ## (0x0C - 0x17)
-XBEE_MESH_DH	= "0"		# Default destination
-XBEE_MESH_DL	= "FFFF"	# Default destination
-XBEE_MESH_DESC	= "\x00\x00\x00\x00\x00\x00\xFF\xFF"	# Escaped Destination
+XBEE_MESH_DH	= "13a200"		# Default destination
+XBEE_MESH_DL	= "40b3af65"	# Default destination
+XBEE_MESH_DESC	= "\x00\x13\xa2\x00\x40\xb3\xaf\x65"	# Escaped Destination
 
 ser_ble	 = serial.Serial(BLE_PORT, BLE_BAUD, timeout = 1)
 ser_xbee = serial.Serial(XBEE_PORT, XBEE_BAUD, timeout = 1)
@@ -118,15 +118,25 @@ def main():
 		if (ser_xbee.read(3) == "OK\r"):
 			print "AT  \tOK"
 			ser_xbee.write("ATAP 1\r")					# switch to API mode
-			print "ATAP\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.read(3)
+			ser_xbee.write("ATAP\r")
+			print "ATAP\t%s" %ser_xbee.read(2)			# wait for reply
 			ser_xbee.write("ATID %s\r" %XBEE_MESH_ID)	# mesh id
-			print "ATID\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.read(3)
+			ser_xbee.write("ATID\r")
+			print "ATID\t%s" %ser_xbee.read(10)			# wait for reply
 			ser_xbee.write("ATCH %s\r" %XBEE_MESH_CH)	# mesh ch
-			print "ATCH\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.read(3)
+			ser_xbee.write("ATCH\r")
+			print "ATCH\t%s" %ser_xbee.read(10)			# wait for reply
 			ser_xbee.write("ATDH %s\r" %XBEE_MESH_DH)	# mesh dh
-			print "ATDH\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.read(3)
+			ser_xbee.write("ATDH\r")
+			print "ATDH\t%s" %ser_xbee.read(10)			# wait for reply
 			ser_xbee.write("ATDL %s\r" %XBEE_MESH_DL)	# mesh dl
-			print "ATDL\t%s" %ser_xbee.read(3)			# wait for reply
+			ser_xbee.read(3)
+			ser_xbee.write("ATDL\r")
+			print "ATDL\t%s" %ser_xbee.read(10)			# wait for reply
 			ser_xbee.write("ATWR\r")					# switch to API mode
 			print "ATWR\t%s" %ser_xbee.read(3)			# wait for reply
 			ser_xbee.write("ATCN\r")					# exit command mode
