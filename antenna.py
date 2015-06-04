@@ -88,7 +88,7 @@ def ble_evt_gap_scan_response(sender, args):
 			rx["mac"]	= args["sender"]					# MAC address
 			rx["count"] = args["data"][29]					# byte 29 is packet count
 			rx["rssi"]	= args["rssi"]						# RSSI
-			rx["data"]	= args["data"][2:29]				# data payload
+			#rx["data"]	= args["data"][2:29]				# data payload
 			tag_data.append(rx)								# append received packet
 			#print rx
 
@@ -108,21 +108,27 @@ def main():
 	print "[Tag Scanner]"
 
 	# Switch to API Mode
+	print ">>> Configuring Xbee"
 	time.sleep(1)
 	ser_xbee.write("+++")				# enter command mode
 	time.sleep(1)
 	if (ser_xbee.read(3) == "OK\r"):
-		ser_xbee.write("ATAP 1\r")		# switch to API mode
-		ser_xbee.write("ATAC\r")		# apply settings
-		ser_xbee.write("ATCN\r")		# exit command mode 
-
-	# Configure Xbee
-	xbee.at(command="CE", parameter="0")			# router mode
-	xbee.at(command="ID", parameter=XBEE_MESH_ID)	# mesh id 
-	xbee.at(command="CH", parameter=XBEE_MESH_CH)	# mesh channel
-	xbee.at(command="DH", parameter=XBEE_MESH_DH)	# mesh id 
-	xbee.at(command="DL", parameter=XBEE_MESH_DL)	# mesh channel
-	xbee.at(command="AC")							# apply
+		print "AT  \tOK"
+		ser_xbee.write("ATAP 1\r")					# switch to API mode
+		print "ATAP\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATID %s\r" %XBEE_MESH_ID)	# mesh id
+		print "ATID\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATCH %s\r" %XBEE_MESH_CH)	# mesh ch
+		print "ATCH\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATDH %s\r" %XBEE_MESH_DH)	# mesh dh
+		print "ATDH\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATDL %s\r" %XBEE_MESH_DL)	# mesh dl
+		print "ATDL\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATWR\r")					# switch to API mode
+		print "ATWR\t%s" %ser_xbee.read(3)			# wait for reply
+		ser_xbee.write("ATCN\r")					# exit command mode
+	else:
+		print "AT  \tFAIL" 
 
 	# create BGLib object
 	ble = bglib.BGLib()
